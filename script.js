@@ -80,6 +80,29 @@ if (revealTargets.length > 0) {
   });
 }
 
+document.querySelectorAll("[data-carousel]").forEach(function (carousel) {
+  const track = carousel.querySelector(".carousel-track");
+  if (!track) return;
+
+  function getScrollAmount() {
+    const card = track.querySelector(".carousel-card");
+    if (!card) return 320;
+    const styles = window.getComputedStyle(track);
+    const gap = parseFloat(styles.gap || styles.columnGap || "0");
+    return card.getBoundingClientRect().width + gap;
+  }
+
+  carousel.querySelectorAll("[data-carousel-btn]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const direction = button.dataset.carouselBtn === "next" ? 1 : -1;
+      track.scrollBy({
+        left: getScrollAmount() * direction,
+        behavior: "smooth",
+      });
+    });
+  });
+});
+
 function googleTranslateElementInit() {
   if (!window.google || !window.google.translate) {
     return;

@@ -214,7 +214,10 @@ form .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 18px;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  overflow: hidden;
   border-radius: 999px;
   color: #fff;
   text-decoration: none;
@@ -222,6 +225,13 @@ form .btn {
   background: linear-gradient(105deg, #0a2f52, #144a78);
   box-shadow: 0 10px 24px rgba(10, 47, 82, 0.36);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.whatsapp-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  fill: #fff;
 }
 
 .whatsapp-float:hover {
@@ -474,6 +484,67 @@ footer,
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.carousel {
+  position: relative;
+  margin-top: 30px;
+}
+
+.carousel-viewport {
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 6px 56px 16px;
+  scrollbar-width: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  height: 0;
+  display: none;
+}
+
+.carousel-card {
+  flex: 0 0 auto;
+  width: min(320px, 80vw);
+  scroll-snap-align: start;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  color: var(--blue-700);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 10px 24px rgba(8, 42, 70, 0.12);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.carousel-btn:hover {
+  border-color: rgba(232, 127, 31, 0.45);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.carousel-btn.prev {
+  left: 6px;
+}
+
+.carousel-btn.next {
+  right: 6px;
 }
 
 .gallery-four {
@@ -1116,6 +1187,14 @@ footer {
 
   .gallery-grid img {
     height: 190px;
+  }
+
+  .carousel-track {
+    padding: 6px 24px 12px;
+  }
+
+  .carousel-btn {
+    display: none;
   }
 
   .quality-grid {
