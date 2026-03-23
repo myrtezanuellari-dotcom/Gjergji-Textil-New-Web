@@ -856,6 +856,15 @@ ul.quality {
   margin-top: 24px;
 }
 
+.info-section .card {
+  padding: 26px;
+  min-height: 220px;
+}
+
+.info-section .card p {
+  font-size: 1.02rem;
+}
+
 .quality ul {
   margin-top: 22px;
   padding-left: 18px;
