@@ -47,6 +47,7 @@ body {
     radial-gradient(circle at 5% 35%, rgba(42, 109, 153, 0.18), transparent 32%),
     linear-gradient(180deg, var(--surface-2), var(--surface));
   line-height: 1.6;
+  overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -1105,6 +1106,21 @@ footer {
   .sub-hero {
     padding-left: 16px;
     padding-right: 16px;
+  }
+}
+
+@media (max-width: 1366px) {
+  .nav {
+    padding-left: 2.5vw;
+    padding-right: 2.5vw;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-links a {
+    font-size: 0.88rem;
   }
 }
 
