@@ -40,7 +40,7 @@ html {
 }
 
 body {
-  font-family: "Montserrat", sans-serif;
+  font-family: "Roboto", sans-serif;
   color: var(--text);
   background:
     radial-gradient(circle at 92% 10%, rgba(232, 127, 31, 0.2), transparent 35%),
@@ -1319,3 +1319,4 @@ footer {
     display: none;
   }
 }
+

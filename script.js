@@ -3,9 +3,23 @@ const formStatus = document.getElementById("formStatus");
 
 if (form) {
   form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const name = (form.querySelector('input[name="name"]')?.value || "").trim();
+    const email = (form.querySelector('input[name="email"]')?.value || "").trim();
+    const message = (form.querySelector('textarea[name="message"]')?.value || "").trim();
+    const phoneNumber = "355697088800";
+    const textParts = [];
+
+    if (name) textParts.push("Emri: " + name);
+    if (email) textParts.push("Email: " + email);
+    if (message) textParts.push("Mesazhi: " + message);
+
+    const text = encodeURIComponent(textParts.join("\n"));
+    const whatsappUrl = "https://wa.me/" + phoneNumber + "?text=" + text;
     if (formStatus) {
-      formStatus.textContent = "Duke dërguar mesazhin...";
+      formStatus.textContent = "Po hapet WhatsApp për dërgimin e mesazhit...";
     }
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   });
 }
 
@@ -207,3 +221,4 @@ document.addEventListener("DOMContentLoaded", () => {
   wireLanguageSwitcher();
   loadGoogleTranslate();
 });
+
