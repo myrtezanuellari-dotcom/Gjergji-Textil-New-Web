@@ -129,8 +129,18 @@ body {
   display: none;
   width: 42px;
   height: 42px;
-  font-size: 1.2rem;
+  font-size: 0;
   line-height: 1;
+}
+
+.menu-icon {
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  display: block;
+  margin: 0 auto;
+  border-radius: 999px;
+  box-shadow: 0 6px 0 currentColor, 0 -6px 0 currentColor;
 }
 
 .theme-toggle {
@@ -265,9 +275,15 @@ form .btn {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 0;
   line-height: 1;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.language-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .language-toggle:hover {
@@ -307,6 +323,14 @@ form .btn {
   font-size: 1rem;
   line-height: 1;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.language-flag {
+  width: 20px;
+  height: 14px;
+  display: block;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 .language-option:hover {
