@@ -216,9 +216,198 @@ function loadGoogleTranslate() {
   document.body.appendChild(script);
 }
 
+const COOKIE_CONSENT_KEY = "gjergji-cookie-consent";
+
+function getCookieConsent() {
+  try {
+    return window.localStorage.getItem(COOKIE_CONSENT_KEY);
+  } catch (error) {
+    return null;
+  }
+}
+
+function setCookieConsent(value) {
+  try {
+    window.localStorage.setItem(COOKIE_CONSENT_KEY, value);
+  } catch (error) {
+    // If storage is blocked, still allow hiding the banner for this session.
+  }
+}
+
+function initCookieBanner() {
+  if (getCookieConsent()) return;
+  if (document.querySelector(".cookie-banner")) return;
+
+  const existingLink = document.querySelector('a[href*="cookies.html"]');
+  const cookiesHref = existingLink ? existingLink.getAttribute("href") : "privacy/cookies.html";
+
+  const banner = document.createElement("div");
+  banner.className = "cookie-banner";
+  banner.setAttribute("role", "dialog");
+  banner.setAttribute("aria-live", "polite");
+  banner.setAttribute("aria-label", "Njoftim për cookies");
+
+  banner.innerHTML = `
+    <p>
+      Ne përdorim cookie për të përmirësuar eksperiencën tuaj. Duke klikuar “Pranoj”,
+      ju pajtoheni me përdorimin e cookie-ve. Më shumë te
+      <a href="${cookiesHref}">Politika e Cookies</a>.
+    </p>
+    <div class="cookie-actions">
+      <button class="cookie-btn cookie-btn-accept" type="button">Pranoj</button>
+      <button class="cookie-btn" type="button">Refuzoj</button>
+    </div>
+  `;
+
+  const [acceptBtn, declineBtn] = banner.querySelectorAll(".cookie-btn");
+  if (acceptBtn) {
+    acceptBtn.addEventListener("click", () => {
+      setCookieConsent("accepted");
+      banner.remove();
+    });
+  }
+  if (declineBtn) {
+    declineBtn.addEventListener("click", () => {
+      setCookieConsent("declined");
+      banner.remove();
+    });
+  }
+
+  document.body.appendChild(banner);
+}
+
+function initChatWidget() {
+  if (document.querySelector(".chat-panel")) return;
+
+  function getChatEndpoint() {
+    if (window.GJERGJI_CHAT_API) return window.GJERGJI_CHAT_API;
+    return "/api/chat";
+  }
+
+  const toggle = document.createElement("button");
+  toggle.className = "chat-toggle";
+  toggle.type = "button";
+  toggle.setAttribute("aria-label", "Hap chat");
+  toggle.textContent = "AI";
+
+  const panel = document.createElement("div");
+  panel.className = "chat-panel hidden";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Chat me asistencen");
+
+  panel.innerHTML = `
+    <div class="chat-header">
+      <span>Asistenti i Gjergji H Textil</span>
+      <button class="chat-close" type="button" aria-label="Mbyll chat">×</button>
+    </div>
+    <div class="chat-messages" aria-live="polite"></div>
+    <div class="chat-input">
+      <textarea rows="1" placeholder="Shkruaj pyetjen tuaj..."></textarea>
+      <button class="chat-send" type="button">Dergo</button>
+    </div>
+  `;
+
+  const messages = panel.querySelector(".chat-messages");
+  const input = panel.querySelector("textarea");
+  const sendBtn = panel.querySelector(".chat-send");
+  const closeBtn = panel.querySelector(".chat-close");
+
+  const history = [];
+
+  function appendBubble(text, role) {
+    const bubble = document.createElement("div");
+    bubble.className = `chat-bubble ${role}`;
+    bubble.textContent = text;
+    messages.appendChild(bubble);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function setBusy(isBusy) {
+    sendBtn.disabled = isBusy;
+    input.disabled = isBusy;
+  }
+
+  async function sendMessage() {
+    const text = (input.value || "").trim();
+    if (!text) return;
+    input.value = "";
+    appendBubble(text, "user");
+    history.push({ role: "user", content: text });
+    setBusy(true);
+
+    try {
+      const endpoint = getChatEndpoint();
+      if (location.protocol === "file:" && endpoint.startsWith("/")) {
+        appendBubble(
+          "Chat-i funksionon vetem kur faqja hapet nga serveri (p.sh. http://localhost:3000).",
+          "bot"
+        );
+        setBusy(false);
+        return;
+      }
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        appendBubble("Ka nje problem. Ju lutem provoni perseri pak me vone.", "bot");
+        setBusy(false);
+        return;
+      }
+      const reply = data.reply || "Faleminderit! Si mund tju ndihmoj tjeter?";
+      appendBubble(reply, "bot");
+      history.push({ role: "assistant", content: reply });
+    } catch (error) {
+      appendBubble("Ka nje problem me lidhjen. Provoni perseri.", "bot");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  toggle.addEventListener("click", () => {
+    panel.classList.toggle("hidden");
+    if (!panel.classList.contains("hidden")) {
+      input.focus();
+      if (!history.length) {
+        appendBubble("Pershendetje! Si mund tju ndihmoj sot?", "bot");
+        if (location.protocol === "file:" && getChatEndpoint().startsWith("/")) {
+          appendBubble(
+            "Hap faqen nga serveri (http://localhost:3000) qe chat-i te funksionoje.",
+            "bot"
+          );
+        }
+        if (location.hostname.includes("github.io") && !window.GJERGJI_CHAT_API) {
+          appendBubble(
+            "Vendos linkun e API-se me `window.GJERGJI_CHAT_API` qe chat-i te punoje ne GitHub Pages.",
+            "bot"
+          );
+        }
+      }
+    }
+  });
+
+  closeBtn.addEventListener("click", () => {
+    panel.classList.add("hidden");
+  });
+
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  document.body.appendChild(toggle);
+  document.body.appendChild(panel);
+}
+
 wireLanguageSwitcher();
 document.addEventListener("DOMContentLoaded", () => {
   wireLanguageSwitcher();
   loadGoogleTranslate();
+  initCookieBanner();
+  initChatWidget();
 });
-

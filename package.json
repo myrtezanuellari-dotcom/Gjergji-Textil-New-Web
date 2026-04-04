@@ -1,0 +1,15 @@
+{
+  "name": "gjergji-textil-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static site with a lightweight OpenAI chat endpoint.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "\"C:\\\\Program Files\\\\nodejs\\\\node.exe\" server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  }
+}
