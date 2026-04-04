@@ -1,0 +1,4 @@
+.npm-cache/
+.npm-global/
+node_modules/
+.env

@@ -1,10 +1,12 @@
 # Chat Setup (Local + GitHub Pages)
 
 ## Local (works now)
-1. Create `.env` from `.env.example` and set `OPENAI_API_KEY`.
-2. Run `npm install`.
-3. Run `npm run dev`.
-4. Open `http://localhost:3000`.
+1. Install Ollama from `https://ollama.com/`.
+2. Run `ollama pull llama3.1:8b`.
+3. Create `.env` from `.env.example`.
+4. Run `npm install`.
+5. Run `npm run dev`.
+6. Open `http://localhost:3000`.
 
 ## GitHub Pages (static site)
 GitHub Pages cannot run a Node server, so use the Cloudflare Worker included in `cloudflare/`.
