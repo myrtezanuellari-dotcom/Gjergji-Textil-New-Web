@@ -47,6 +47,49 @@ if (menuToggle && navMenu) {
   });
 }
 
+function placeLanguageSwitcherInMobileMenu() {
+  const switcher = document.querySelector(".language-switcher");
+  const nav = document.querySelector(".nav");
+  if (!switcher || !nav) return;
+
+  const originalParent = switcher.parentElement;
+  const originalNext = switcher.nextElementSibling;
+
+  const placeInNav = () => {
+    if (!nav.contains(switcher)) {
+      nav.appendChild(switcher);
+    }
+    switcher.classList.add("in-nav");
+  };
+
+  const placeOriginal = () => {
+    switcher.classList.remove("in-nav");
+    if (originalParent) {
+      if (originalNext && originalParent.contains(originalNext)) {
+        originalParent.insertBefore(switcher, originalNext);
+      } else {
+        originalParent.appendChild(switcher);
+      }
+    }
+  };
+
+  const mediaQuery = window.matchMedia("(max-width: 1024px)");
+  const updatePlacement = () => {
+    if (mediaQuery.matches) {
+      placeInNav();
+    } else {
+      placeOriginal();
+    }
+  };
+
+  updatePlacement();
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener("change", updatePlacement);
+  } else {
+    mediaQuery.addListener(updatePlacement);
+  }
+}
+
 const root = document.documentElement;
 const THEME_KEY = "gjergji-theme";
 
@@ -297,12 +340,12 @@ function initChatWidget() {
 
   panel.innerHTML = `
     <div class="chat-header">
-      <span>Asistenti i Gjergji H Textil</span>
+      <span>AI</span>
       <button class="chat-close" type="button" aria-label="Mbyll chat">×</button>
     </div>
     <div class="chat-messages" aria-live="polite"></div>
     <div class="chat-input">
-      <textarea rows="1" placeholder="Shkruaj pyetjen tuaj..."></textarea>
+      <textarea rows="1" placeholder="Shkruani pyetjen tuaj..."></textarea>
       <button class="chat-send" type="button">Dergo</button>
     </div>
   `;
@@ -404,10 +447,14 @@ function initChatWidget() {
   document.body.appendChild(panel);
 }
 
+placeLanguageSwitcherInMobileMenu();
 wireLanguageSwitcher();
 document.addEventListener("DOMContentLoaded", () => {
+  placeLanguageSwitcherInMobileMenu();
   wireLanguageSwitcher();
   loadGoogleTranslate();
   initCookieBanner();
   initChatWidget();
 });
+
+

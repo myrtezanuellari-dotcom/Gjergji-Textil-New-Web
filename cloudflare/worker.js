@@ -1,4 +1,4 @@
-function buildInput(systemPrompt, history, userMessage) {
+﻿function buildInput(systemPrompt, history, userMessage) {
   const items = [];
   items.push({
     type: "message",
@@ -142,3 +142,5 @@ export default {
     );
   },
 };
+
+
