@@ -27,15 +27,51 @@ const menuToggle = document.querySelector(".menu-toggle");
 const navMenu = document.getElementById("navMenu");
 
 if (menuToggle && navMenu) {
+  const dropdowns = navMenu.querySelectorAll(".nav-dropdown");
+
   menuToggle.addEventListener("click", function () {
     const isOpen = navMenu.classList.toggle("open");
     menuToggle.setAttribute("aria-expanded", String(isOpen));
+    if (!isOpen) {
+      dropdowns.forEach(function (dropdown) {
+        dropdown.classList.remove("open");
+        const toggle = dropdown.querySelector(".nav-dropdown-toggle");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
+      });
+    }
   });
 
   navMenu.querySelectorAll("a").forEach(function (link) {
     link.addEventListener("click", function () {
       navMenu.classList.remove("open");
       menuToggle.setAttribute("aria-expanded", "false");
+      dropdowns.forEach(function (dropdown) {
+        dropdown.classList.remove("open");
+        const toggle = dropdown.querySelector(".nav-dropdown-toggle");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  });
+
+  dropdowns.forEach(function (dropdown) {
+    const toggle = dropdown.querySelector(".nav-dropdown-toggle");
+    if (!toggle) return;
+
+    toggle.addEventListener("click", function (event) {
+      event.preventDefault();
+      const isDesktop = window.innerWidth > 1024;
+      const willOpen = !dropdown.classList.contains("open");
+
+      dropdowns.forEach(function (otherDropdown) {
+        otherDropdown.classList.remove("open");
+        const otherToggle = otherDropdown.querySelector(".nav-dropdown-toggle");
+        if (otherToggle) otherToggle.setAttribute("aria-expanded", "false");
+      });
+
+      if (!isDesktop || willOpen) {
+        dropdown.classList.toggle("open", willOpen);
+        toggle.setAttribute("aria-expanded", String(willOpen));
+      }
     });
   });
 
@@ -43,6 +79,24 @@ if (menuToggle && navMenu) {
     if (window.innerWidth > 900) {
       navMenu.classList.remove("open");
       menuToggle.setAttribute("aria-expanded", "false");
+    }
+
+    if (window.innerWidth > 1024) {
+      dropdowns.forEach(function (dropdown) {
+        dropdown.classList.remove("open");
+        const toggle = dropdown.querySelector(".nav-dropdown-toggle");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
+      });
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    if (!navMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+      dropdowns.forEach(function (dropdown) {
+        dropdown.classList.remove("open");
+        const toggle = dropdown.querySelector(".nav-dropdown-toggle");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
+      });
     }
   });
 }
@@ -89,22 +143,6 @@ function placeLanguageSwitcherInMobileMenu() {
     mediaQuery.addListener(updatePlacement);
   }
 }
-
-const root = document.documentElement;
-const THEME_KEY = "gjergji-theme";
-
-function setTheme(theme) {
-  root.setAttribute("data-theme", theme);
-}
-
-(function initTheme() {
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
-  setTheme(prefersDark.matches ? "dark" : "light");
-
-  prefersDark.addEventListener("change", function (event) {
-    setTheme(event.matches ? "dark" : "light");
-  });
-})();
 
 const revealTargets = document.querySelectorAll(
   ".section, .card, .client-card, .value-item, .footer-grid section"
@@ -319,134 +357,6 @@ function initCookieBanner() {
   document.body.appendChild(banner);
 }
 
-function initChatWidget() {
-  if (document.querySelector(".chat-panel")) return;
-
-  function getChatEndpoint() {
-    if (window.GJERGJI_CHAT_API) return window.GJERGJI_CHAT_API;
-    return "/api/chat";
-  }
-
-  const toggle = document.createElement("button");
-  toggle.className = "chat-toggle";
-  toggle.type = "button";
-  toggle.setAttribute("aria-label", "Hap chat");
-  toggle.textContent = "AI";
-
-  const panel = document.createElement("div");
-  panel.className = "chat-panel hidden";
-  panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "Chat me asistencen");
-
-  panel.innerHTML = `
-    <div class="chat-header">
-      <span>AI</span>
-      <button class="chat-close" type="button" aria-label="Mbyll chat">×</button>
-    </div>
-    <div class="chat-messages" aria-live="polite"></div>
-    <div class="chat-input">
-      <textarea rows="1" placeholder="Shkruani pyetjen tuaj..."></textarea>
-      <button class="chat-send" type="button">Dergo</button>
-    </div>
-  `;
-
-  const messages = panel.querySelector(".chat-messages");
-  const input = panel.querySelector("textarea");
-  const sendBtn = panel.querySelector(".chat-send");
-  const closeBtn = panel.querySelector(".chat-close");
-
-  const history = [];
-
-  function appendBubble(text, role) {
-    const bubble = document.createElement("div");
-    bubble.className = `chat-bubble ${role}`;
-    bubble.textContent = text;
-    messages.appendChild(bubble);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  function setBusy(isBusy) {
-    sendBtn.disabled = isBusy;
-    input.disabled = isBusy;
-  }
-
-  async function sendMessage() {
-    const text = (input.value || "").trim();
-    if (!text) return;
-    input.value = "";
-    appendBubble(text, "user");
-    history.push({ role: "user", content: text });
-    setBusy(true);
-
-    try {
-      const endpoint = getChatEndpoint();
-      if (location.protocol === "file:" && endpoint.startsWith("/")) {
-        appendBubble(
-          "Chat-i funksionon vetem kur faqja hapet nga serveri (p.sh. http://localhost:3000).",
-          "bot"
-        );
-        setBusy(false);
-        return;
-      }
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        appendBubble("Ka nje problem. Ju lutem provoni perseri pak me vone.", "bot");
-        setBusy(false);
-        return;
-      }
-      const reply = data.reply || "Faleminderit! Si mund tju ndihmoj tjeter?";
-      appendBubble(reply, "bot");
-      history.push({ role: "assistant", content: reply });
-    } catch (error) {
-      appendBubble("Ka nje problem me lidhjen. Provoni perseri.", "bot");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  toggle.addEventListener("click", () => {
-    panel.classList.toggle("hidden");
-    if (!panel.classList.contains("hidden")) {
-      input.focus();
-      if (!history.length) {
-        appendBubble("Pershendetje! Si mund tju ndihmoj sot?", "bot");
-        if (location.protocol === "file:" && getChatEndpoint().startsWith("/")) {
-          appendBubble(
-            "Hap faqen nga serveri (http://localhost:3000) qe chat-i te funksionoje.",
-            "bot"
-          );
-        }
-        if (location.hostname.includes("github.io") && !window.GJERGJI_CHAT_API) {
-          appendBubble(
-            "Vendos linkun e API-se me `window.GJERGJI_CHAT_API` qe chat-i te punoje ne GitHub Pages.",
-            "bot"
-          );
-        }
-      }
-    }
-  });
-
-  closeBtn.addEventListener("click", () => {
-    panel.classList.add("hidden");
-  });
-
-  sendBtn.addEventListener("click", sendMessage);
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-
-  document.body.appendChild(toggle);
-  document.body.appendChild(panel);
-}
-
 placeLanguageSwitcherInMobileMenu();
 wireLanguageSwitcher();
 document.addEventListener("DOMContentLoaded", () => {
@@ -454,7 +364,6 @@ document.addEventListener("DOMContentLoaded", () => {
   wireLanguageSwitcher();
   loadGoogleTranslate();
   initCookieBanner();
-  initChatWidget();
 });
 
 
